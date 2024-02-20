@@ -1,0 +1,128 @@
+unit Unit2;
+
+interface
+
+type
+  TSet = set of char;
+  TArr = array [0..4] of string;
+
+type
+  TClass = Class
+    private
+      fNumeric: integer;
+      fString: string;
+      fSet: TSet;
+      fArr: TArr;
+    protected
+      // Функции косвенного доступа для простого свойства (String)
+      function getString: string;
+      procedure setString(val: string);
+
+      // Функции косвенного доступа для свойства множества
+      function getSet: TSet;
+      procedure pushSet(val: TSet);
+
+      // Функции доступа свойства массива
+      function getIntArr(ind: integer): string;
+      function getStringArr(ind: string): integer;
+      procedure setArr(ind: integer; val: string);
+
+      // Конструктор класса
+      constructor Create;
+
+    public
+
+      // Функция удаления элемента множества
+      procedure eraseSet(val: TSet);
+
+      // Простые свойства
+      property propNumber: integer Read fNumeric Write fNumeric;
+      property propString: string Read getString Write setString;
+
+      // Свойство множества
+      property propSet: TSet Read getSet Write pushSet;
+
+      // Свойства массива
+      // Прямой доступ
+      property propArr1: TArr Read fArr Write fArr;
+      // Default-свойство: поиск элемента по индексу, запись по индексу
+      property propArr2[ind: integer]: string Read getIntArr Write setArr; Default;
+      // Косвенный доступ, поиск по строковому индексу
+      property propArr3[ind: string]: integer Read getStringArr;
+
+  end;
+
+implementation
+
+  // Конструктор класса
+  Constructor TClass.Create;
+  var i: integer;
+  begin
+    inherited Create;
+    fNumeric := 0;
+    fString := '';
+    fSet := [];
+    for i := 0 to 4 do
+      fArr[i] := '';
+  end;
+
+  // Функции косвенного доступа простого свойства (String)
+  function TClass.getString: string;
+  begin
+    result := fString;
+  end;
+
+  procedure TClass.setString(val: string);
+  begin
+    fString := val;
+  end;
+
+  // Функции косвенного доступа для свойства множества
+  function TClass.getSet: TSet;
+  begin
+    result := fSet;
+  end;
+
+  procedure TClass.pushSet(val: TSet);
+  begin
+    fSet := fSet + val;
+  end;
+
+  // Функция удаления элемента множества
+  procedure TClass.eraseSet(val: TSet);
+  begin
+    fSet := fSet - val;
+  end;
+
+  // Функции доступа свойства массива
+  function TClass.getIntArr(ind: integer): string;
+  begin
+    result := fArr[ind];
+  end;
+
+  // Поиск элемента массива по строковому индексу
+  function TClass.getStringArr(ind: string): integer;
+  var i: integer;
+      res: integer;
+  begin
+    res := -1;
+    for i := 0 to 4 do
+      begin
+        if fArr[i] = ind then
+          res := i;
+      end;
+    result := res;
+    i := 0;
+    while (i < 5) and (flag) do
+    begin
+      if True then
+      
+    end;
+  end;
+
+  procedure TClass.setArr(ind: integer; val: string);
+  begin
+    fArr[ind] := val;
+  end;
+
+end.

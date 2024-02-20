@@ -1,0 +1,298 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, CheckLst, ExtCtrls, Unit2;
+
+type
+  // Структура для записи состояния элемента CheckListBox
+  TLineState = record
+    // Номер строки
+    LineNum: integer;
+    // Состояние - Checked / Unchecked
+    State: boolean;
+    function NewState(ln: integer; st: boolean): TLineState;
+  end;
+
+  // Указатель на метод
+  TFieldCheckEvent = procedure(Sender: TObject; State: TLineState) of Object;
+  TCustomCLB = class(TCheckListBox)
+  private
+    // Поле для события
+    FOnCLBItem: TFieldCheckEvent;
+    // Поле свойства: состояние текущего CheckBoxList-элемента
+    FCLBItemState: TLineState;
+  protected
+    // Корреспондирующий метод
+    procedure DoCLBItem(State: TLineState); Dynamic;
+    // Метод CheckListBox, из которого вызывается событие
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      //X, Y: Integer); override;
+
+    // Переопределенный стандартный метод 
+    procedure ClickCheck; override;
+  public
+    // Свойство: состояние текущего CheckBoxList-элемента
+    property CLBItemState: TLineState Read FCLBItemState Write FCLBItemState;
+    property OnCLBItem: TFieldCheckEvent Read FOnCLBItem Write FOnCLBItem;
+  end;
+
+type
+  TForm1 = class(TForm)
+    eInputNumStr: TEdit;
+    Label1: TLabel;
+    bChangeNumber: TButton;
+    bChangeString: TButton;
+    Label2: TLabel;
+    eNumberRes: TEdit;
+    eStringRes: TEdit;
+    Label3: TLabel;
+    Shape1: TShape;
+    Shape2: TShape;
+    cbSet: TComboBox;
+    Label4: TLabel;
+    eInputSet: TEdit;
+    bSetPush: TButton;
+    bSetErase: TButton;
+    Label5: TLabel;
+    Shape3: TShape;
+    Label6: TLabel;
+    eArrayInput: TEdit;
+    cbArrayIndex: TComboBox;
+    bArrayPush: TButton;
+    Label7: TLabel;
+    cbArray: TComboBox;
+    Label8: TLabel;
+    eArrayFoundString: TEdit;
+    Shape4: TShape;
+    Shape5: TShape;
+    Label9: TLabel;
+    Label10: TLabel;
+    eCheckedNum: TEdit;
+    eArrayIntSearch: TEdit;
+    Label11: TLabel;
+    bArrayIntSearch: TButton;
+    Label12: TLabel;
+    eArrayStringSearch: TEdit;
+    bArrayCharSearch: TButton;
+    Label13: TLabel;
+    eArrayFoundIndex: TEdit;
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure bArrayCharSearchClick(Sender: TObject);
+    procedure bArrayIntSearchClick(Sender: TObject);
+    procedure bArrayPushClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure bSetEraseClick(Sender: TObject);
+    procedure bSetPushClick(Sender: TObject);
+    procedure bChangeStringClick(Sender: TObject);
+    procedure bChangeNumberClick(Sender: TObject);
+  private
+  public
+    // Переменная типа класса
+    CustomCLB: TCustomCLB;
+    // Обработчик
+    procedure EventCLBItem(Sender: TObject; State: TLineState);
+  end;
+
+var
+  Form1:  TForm1;
+  Obj:    TClass;
+
+implementation
+{$R *.dfm}
+
+// FormCreate
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Obj := TClass.Create;
+  cbSet.Clear();
+
+  // Компонент
+  CustomCLB := TCustomCLB.Create(Self);
+  with CustomCLB do
+  begin
+    Parent := self;
+    SetBounds(15, 287, 115, 125);
+    Name := 'CheckListBox';
+    CLBItemState := CLBItemState.NewState(0, false);
+    Visible := true;
+    // Делегированный обработчик
+    OnCLBItem := EventCLBItem;
+    // Переопределенный стандартный обработчик
+    //OnClickCheck := EventCLBItem;
+    Items.Add('Сделать ЛР1');
+    Items.Add('Сделать ЛР2');
+    Items.Add('Сделать ЛР3');
+    Items.Add('Сделать ЛР4');
+    Items.Add('Сделать ЛР5');
+    Items.Add('Сделать ЛР6');
+    Font.Size := 11;
+    Font.Name := 'Arial';
+  end;
+
+end;
+
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+
+end;
+
+// Инициализатор структуры состояния строки
+function TLineState.NewState(ln: integer; st: boolean): TLineState;
+begin
+  result.LineNum := ln;
+  result.State := st;
+end;
+
+//Прямой доступ к числу
+procedure TForm1.bChangeNumberClick(Sender: TObject);
+begin
+  try
+    Obj.propNumber := StrToInt(eInputNumStr.Text);
+    eNumberRes.Text := IntToStr(Obj.propNumber);
+    eNumberRes.Update;
+  except
+    on Exception do ShowMessage('Несовместимые типы.');
+  end;
+end;
+
+//Косвенный доступ к строке
+procedure TForm1.bChangeStringClick(Sender: TObject);
+begin
+  Obj.propString := eInputNumStr.Text;
+  eStringRes.Text := Obj.propString;
+  eStringRes.Update;
+end;
+
+// Косвенный доступ к множеству
+procedure TForm1.bSetPushClick(Sender: TObject);
+var elem: char;
+    newElements: TSet;
+begin
+  newElements := [];
+  // Из введенных символов формируем множество на добавление
+  for elem in eInputSet.Text do
+    newElements := newElements + [elem];
+  // Добавляем новые символы во множество
+  Obj.propSet := newElements;
+
+  // Обновляем CheckBox, связанный со множеством
+  cbSet.Clear;
+  for elem in Obj.propSet do
+    // Косвенный доступ ко множеству
+    cbSet.AddItem(elem, cbSet);
+  cbSet.Update;
+end;
+
+// Удаление элемента множества
+procedure TForm1.bSetEraseClick(Sender: TObject);
+var elem: char;
+    removeElements: TSet;
+begin
+  removeElements := [];
+  // Из введенных символов формируем множество на удаление
+  for elem in eInputSet.Text do
+    removeElements := removeElements + [elem];
+  // Удаляем символы из множества
+  Obj.eraseSet(removeElements);
+
+  // Обновляем CheckBox, связанный со множеством
+  cbSet.Clear;
+  // Косвенный доступ ко множеству
+  for elem in Obj.propSet do
+    cbSet.AddItem(elem, cbSet);
+  cbSet.Update;
+end;
+
+// Прямой и косвенный доступ к массиву
+procedure TForm1.bArrayPushClick(Sender: TObject);
+var elem: string;
+begin
+  // Косвенный доступ к массиву - добавление элемента по индексу
+  Obj[cbArrayIndex.ItemIndex] := eArrayInput.Text;
+  //Обновление CheckBox массива
+  cbArray.Clear;
+  // Прямой доступ к массиву
+  for elem in Obj.propArr1 do
+    cbArray.AddItem(elem, cbArray);
+  cbArray.Update;
+  
+end;
+
+// Косвенный доступ по индексу - поиск элемента по индексу
+procedure TForm1.bArrayIntSearchClick(Sender: TObject);
+begin
+  eArrayFoundString.Text := Obj[StrToInt(eArrayIntSearch.Text) - 1];
+  eArrayFoundString.Update;
+end;
+
+// Косвенный доступ по строковому индексу
+procedure TForm1.bArrayCharSearchClick(Sender: TObject);
+begin
+  if Obj.propArr3[eArrayStringSearch.Text] = -1 then
+    ShowMessage('Элемент не найден.') else
+  begin
+    eArrayFoundIndex.Text := IntToStr(Obj.propArr3[eArrayStringSearch.Text] + 1);
+    eArrayFoundIndex.Update;
+  end;
+end;
+
+// Корреспондирующий метод
+procedure TCustomCLB.DoCLBItem(State: TLineState);
+begin
+  if Assigned(FOnCLBItem) then FOnCLBItem(self, State);
+end;
+
+// Метод, отображающий количество отмеченных в TEdit
+procedure TForm1.EventCLBItem(Sender: TObject; State: TLineState);
+var i:      integer;
+    count:  integer;
+begin
+  CustomCLB.CLBItemState := State;
+  count := 0;
+  
+  // Обновляем количество - считаем отмеченные
+  for i := 0 to CustomCLB.Items.Count - 1 do
+  begin
+    if CustomCLB.Checked[i] then
+      Inc(count);
+  end;
+    
+  eCheckedNum.Text := IntToStr(count);
+  eCheckedNum.Update;
+
+end;
+{
+// Метод, из которого вызывается событие
+procedure TCustomCLB.MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X, Y: Integer);
+var tmpState: TLineState;
+    i:        integer;
+begin
+  inherited MouseDown(Button, Shift, X, Y);
+  for i := 0 to Items.Count - 1 do
+  begin
+    tmpState.LineNum := i;
+    tmpState.State := Checked[i];
+    DoCLBItem(tmpState);
+  end;
+end;
+}
+// Переопределение стандартного события
+procedure TCustomCLB.ClickCheck;
+var tmpState: TLineState;
+begin
+  // Выполнение стандартных действий
+  inherited OnClickCheck;
+  // Формируем временную структуру, содержащую информацию о состоянии строки
+  tmpState.LineNum := CLBItemState.LineNum;
+  tmpState.State := Checked[tmpState.LineNum];
+  // Передаем информацию
+  DoCLBItem(tmpState);
+end;
+
+end.
+
